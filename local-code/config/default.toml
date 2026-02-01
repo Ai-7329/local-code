@@ -1,0 +1,27 @@
+# local-code default configuration
+
+[ollama]
+url = "http://localhost:11434"
+model = "Rnj-1"
+connect_timeout = 30   # seconds
+read_timeout = 300     # seconds
+
+[ollama.retry]
+max_retries = 3
+initial_backoff_ms = 1000
+backoff_multiplier = 2.0
+max_backoff_ms = 10000
+
+[agent]
+initial_mode = "execute"
+max_messages = 100
+
+[tools]
+bash_timeout = 120     # seconds
+
+[skills]
+# custom_path = "/path/to/custom/skills"
+
+[lsp]
+# command = "rust-analyzer"
+# args = []

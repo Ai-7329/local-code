@@ -76,6 +76,8 @@ pub struct Agent {
     system_extra: Option<String>,
     /// 会話履歴の最大メッセージ数
     max_messages: usize,
+    /// 作業ディレクトリ（プロジェクトルート）
+    project_root: Option<std::path::PathBuf>,
 }
 
 impl Agent {
@@ -101,11 +103,15 @@ impl Agent {
             context: AgentContext::default(),
             system_extra: None,
             max_messages: config.max_messages,
+            project_root: None,
         }
     }
 
     /// プロジェクトコンテキストを読み込み
     pub async fn load_context(&mut self, project_root: &std::path::Path) -> Result<()> {
+        // 作業ディレクトリを保存
+        self.project_root = Some(project_root.to_path_buf());
+
         self.context = AgentContext::load_from_project(project_root).await?;
 
         // システムプロンプトを設定
@@ -194,6 +200,16 @@ impl Agent {
     fn build_system_prompt(&self) -> String {
         let tools_prompt = self.tools.to_prompt_format();
 
+        // 作業ディレクトリ情報を追加
+        let working_dir_info = if let Some(ref root) = self.project_root {
+            format!(
+                "\n\n# Working Directory\nYou are working in: {}\nAll file operations (read, write, glob, grep, bash) are relative to this directory.\nWhen using tools, you can use relative paths from this directory, or omit the path parameter to use the current directory.",
+                root.display()
+            )
+        } else {
+            String::new()
+        };
+
         format!(
             r#"You are a coding assistant. You can use tools to help the user.
 
@@ -202,8 +218,9 @@ To use a tool, output a JSON block like this:
 {{"tool": "tool_name", "params": {{"param1": "value1"}}}}
 ```
 
-{}"#,
-            tools_prompt
+{}{}"#,
+            tools_prompt,
+            working_dir_info
         )
     }
 

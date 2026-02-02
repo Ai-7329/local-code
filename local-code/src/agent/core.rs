@@ -124,6 +124,9 @@ impl Agent {
             system_prompt.push_str("\n\n");
             system_prompt.push_str(&ctx);
         }
+        // デバッグ: システムプロンプトをログ出力
+        tracing::debug!("System prompt set with working directory: {:?}", self.project_root);
+        eprintln!("[DEBUG] Working directory in system prompt: {:?}", self.project_root);
         self.conversation.set_system(system_prompt);
 
         Ok(())

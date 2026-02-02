@@ -9,8 +9,8 @@ use crossterm::{
     style::{Color, Print, ResetColor, SetForegroundColor},
 };
 
-/// 確認が必要な危険なツールのリスト
-const DANGEROUS_TOOLS: &[&str] = &["bash", "write", "edit", "git_commit"];
+// 危険なツールの定義はmode.rsに統合（重複排除）
+pub use crate::agent::mode::{DANGEROUS_TOOLS, requires_confirmation};
 
 /// 確認ダイアログの結果
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -121,10 +121,7 @@ impl ConfirmDialog {
     }
 }
 
-/// ツールが確認を必要とするか判定
-pub fn requires_confirmation(tool_name: &str) -> bool {
-    DANGEROUS_TOOLS.contains(&tool_name)
-}
+// requires_confirmation は mode.rs から再エクスポート済み
 
 /// 確認ダイアログを表示する便利関数
 ///

@@ -11,37 +11,51 @@ pub enum Mode {
     Execute,
 }
 
+/// Planモードで許可されるツール（読み取り専用）
+const PLAN_TOOLS: &[&str] = &[
+    "read",
+    "glob",
+    "grep",
+    "git_status",
+    "git_diff",
+    "git_log",
+    "lsp_definition",
+    "lsp_references",
+    "lsp_diagnostics",
+];
+
+/// Executeモードで許可されるツール（全ツール）
+const EXECUTE_TOOLS: &[&str] = &[
+    "read",
+    "write",
+    "edit",
+    "bash",
+    "glob",
+    "grep",
+    "git_status",
+    "git_diff",
+    "git_add",
+    "git_commit",
+    "git_log",
+    "lsp_definition",
+    "lsp_references",
+    "lsp_diagnostics",
+];
+
+/// 確認が必要な危険なツール（書き込み系）
+pub const DANGEROUS_TOOLS: &[&str] = &["bash", "write", "edit", "git_commit"];
+
+/// ツールが確認を必要とするか判定
+pub fn requires_confirmation(tool_name: &str) -> bool {
+    DANGEROUS_TOOLS.contains(&tool_name)
+}
+
 impl Mode {
-    /// モードごとに許可されるツール名のリスト
-    pub fn allowed_tools(&self) -> Vec<&'static str> {
+    /// モードごとに許可されるツール名のスライスを取得（毎回Vecを生成しない）
+    pub fn allowed_tools(&self) -> &'static [&'static str] {
         match self {
-            Mode::Plan => vec![
-                "read",
-                "glob",
-                "grep",
-                "git_status",
-                "git_diff",
-                "git_log",
-                "lsp_definition",
-                "lsp_references",
-                "lsp_diagnostics",
-            ],
-            Mode::Execute => vec![
-                "read",
-                "write",
-                "edit",
-                "bash",
-                "glob",
-                "grep",
-                "git_status",
-                "git_diff",
-                "git_add",
-                "git_commit",
-                "git_log",
-                "lsp_definition",
-                "lsp_references",
-                "lsp_diagnostics",
-            ],
+            Mode::Plan => PLAN_TOOLS,
+            Mode::Execute => EXECUTE_TOOLS,
         }
     }
 
@@ -129,7 +143,7 @@ impl ModeManager {
     }
 
     /// 現在許可されているツール名一覧を取得
-    pub async fn allowed_tools(&self) -> Vec<&'static str> {
+    pub async fn allowed_tools(&self) -> &'static [&'static str] {
         self.current().await.allowed_tools()
     }
 }

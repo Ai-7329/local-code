@@ -1,7 +1,7 @@
 use anyhow::Result;
 use crossterm::{
     cursor,
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     execute,
     style::{Color, Print, ResetColor, SetForegroundColor, Attribute, SetAttribute},
     terminal::{self, ClearType},
@@ -368,6 +368,10 @@ impl Repl {
         loop {
             if event::poll(std::time::Duration::from_millis(100))? {
                 if let Event::Key(key_event) = event::read()? {
+                    // Only process key press events, not release events
+                    if key_event.kind != KeyEventKind::Press {
+                        continue;
+                    }
                     if key_event.code != KeyCode::Tab {
                         self.completion_state = None;
                     }
